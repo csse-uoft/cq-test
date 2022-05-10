@@ -9,9 +9,6 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: read
-
 jobs:
   build:
 
@@ -31,8 +28,14 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       env:
-        GDB_BASE_API: "{{ secrets.GDB_BASE_API }}"
-        GDB_USERNAME: "{{ secrets.GDB_USERNAME }}"
-        GDB_PASSWORD: "{{ secrets.GDB_PASSWORD }}"
+        GDB_BASE_API: ${{ secrets.GDB_BASE_API }}
+        GDB_USERNAME: ${{ secrets.GDB_USERNAME }}
+        GDB_PASSWORD: ${{ secrets.GDB_PASSWORD }}
       run: |
-        pytest
+        pytest --html=./report/report.html
+        
+    - name: Deploy test results
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./report
