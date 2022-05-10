@@ -35,7 +35,7 @@ def load_base_ontologies():
 
 @pytest.mark.order(1)
 def test_setup():
-    # drop_data()
-    # load_base_ontologies()
+    drop_data()
+    load_base_ontologies()
     download_test_data()
     assert import_ttl_and_wait(turtle_file_path, username=USERNAME, password=PASSWORD)
