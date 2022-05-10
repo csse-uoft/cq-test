@@ -1,7 +1,16 @@
 import pytest
+import urllib.request
+import os
 
 from utils.grapgdb import import_ttl_and_wait, client
-from utils.config import SPARQL_ENDPOINT, USERNAME, PASSWORD
+from utils.config import SPARQL_ENDPOINT, USERNAME, PASSWORD, TEST_DATA_LOCATION, BASE_ONTOLOGY_LOCATION
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+turtle_file_path = f"{dir_path}/../data/unit_test.ttl"
+
+
+def download_test_data():
+    urllib.request.urlretrieve(TEST_DATA_LOCATION, turtle_file_path)
 
 
 def drop_data():
@@ -18,16 +27,15 @@ def load_base_ontologies():
 
     default_world.set_backend(backend="sparql-endpoint",
                               endpoint=SPARQL_ENDPOINT, debug=False,
-    # endpoint="http://3.97.83.181:7200/repositories/cq-test", debug=False,
-    username=USERNAME, password=PASSWORD)
+                              # endpoint="http://3.97.83.181:7200/repositories/cq-test", debug=False,
+                              username=USERNAME, password=PASSWORD)
 
-    compass_onto = default_world.get_ontology(
-        "https://github.com/csse-uoft/compass-ontology/releases/download/latest/compass.owl"
-    ).load(load_all_properties=False, reload=True)
+    compass_onto = default_world.get_ontology(BASE_ONTOLOGY_LOCATION).load(load_all_properties=False, reload=True)
 
 
 @pytest.mark.order(1)
 def test_setup():
-    drop_data()
-    load_base_ontologies()
-    assert import_ttl_and_wait('./data/unit_test.ttl', username=USERNAME, password=PASSWORD)
+    # drop_data()
+    # load_base_ontologies()
+    download_test_data()
+    assert import_ttl_and_wait(turtle_file_path, username=USERNAME, password=PASSWORD)
