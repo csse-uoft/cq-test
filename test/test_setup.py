@@ -6,7 +6,7 @@ from utils.grapgdb import import_ttl_and_wait, client
 from utils.config import SPARQL_ENDPOINT, USERNAME, PASSWORD, TEST_DATA_LOCATION, BASE_ONTOLOGY_LOCATION
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-turtle_file_path = f"{dir_path}/../data/unit_test.ttl"
+turtle_file_path = f"{dir_path}/../unit_test.ttl"
 
 
 def download_test_data():
