@@ -1,9 +1,44 @@
 from utils.grapgdb import client
 from utils import simplify_uri, assert_list_ignore_order
+from utils.graph_lib import plot_g_pyviz
+import networkx as nx
 import pytest
+from pytest_html import extras
 
 
-def test_cq1():
+def draw_graph(result, extra):
+    # Plot graph
+    G1 = nx.MultiDiGraph()
+
+    edges_org2service = []
+    edges_service2sh = []
+    for data in result['results']['bindings']:
+        for_sh = simplify_uri(data['forStakeholder']['value'])
+        for_org = simplify_uri(data['forOrg']['value'])
+        for_service = simplify_uri(data['forService']['value'])
+        service_code = simplify_uri(data['forCode']['value'])
+        location = simplify_uri(data['location']['value'])
+
+        G1.add_node(for_org, color='#e57373')
+        G1.add_node(for_service, color='#4caf50')
+        G1.add_node(for_sh, color='#ab47bc')
+
+        edges_org2service.append((for_org, for_service))
+        edges_service2sh.append((for_service, for_sh))
+
+    # Remove duplicated edges
+    edges_org2service = [*set(edges_org2service)]
+    edges_service2sh = [*set(edges_service2sh)]
+
+    G1.add_edges_from(edges_org2service, title='has service', color='#0091ea')
+    G1.add_edges_from(edges_service2sh, title='eligible for', color='#0091ea')
+
+    plot_g_pyviz(G1, filename='cq1.html',
+                 subtitle="What cp:Organizations service a community?")
+    extra.append(extras.url('cq1.html', name="Show Graph"))
+
+
+def test_cq1(extra):
     query = """
         # What cp:Organization (s) by cp:Service type exist in my cp:Community
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -70,6 +105,8 @@ def test_cq1():
 
     result = client.execute_sparql(query, infer=True)
     assert len(result['results']['bindings']) > 0
+
+    draw_graph(result, extra)
 
     # stakeholder URI -> list of services
     stakeholder2services = {}

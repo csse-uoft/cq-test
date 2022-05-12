@@ -1,9 +1,43 @@
 from utils.grapgdb import client
 from utils import simplify_uri, assert_list_ignore_order
+from utils.graph_lib import plot_g_pyviz
+import networkx as nx
 import pytest
+from pytest_html import extras
 
 
-def test_cq2():
+def draw_graph(result, extra):
+    # Plot graph
+    G1 = nx.MultiDiGraph()
+
+    edges_funding = []
+    edges_org2code = []
+    for data in result['results']['bindings']:
+        for_code = f"{simplify_uri(data['forCode']['value'])} @ {simplify_uri(data['area']['value'])}"
+        funders_org = simplify_uri(data['fundersOrg']['value'])
+        for_org = simplify_uri(data['forOrg']['value'])
+
+        G1.add_node(for_org, color='#e57373')
+        G1.add_node(funders_org, color='#e57373')
+        G1.add_node(for_code, color='#4caf50')
+
+        edges_funding.append((funders_org, for_org))
+        if 'cp:Funding' not in for_code:
+            edges_org2code.append((for_org, for_code))
+
+    # Remove duplicated edges
+    edges_funding = [*set(edges_funding)]
+    edges_org2code = [*set(edges_org2code)]
+
+    G1.add_edges_from(edges_funding, title='provides funding', color='#0091ea')
+    G1.add_edges_from(edges_org2code, title='has service code', color='#0091ea')
+
+    plot_g_pyviz(G1, filename='cq2.html',
+                 subtitle="What are the funding flows for the organizations broken down by cp:Service type?")
+    extra.append(extras.url('cq2.html', name="Show Graph"))
+
+
+def test_cq2(extra):
     query = """
         # what are the funding flows for the organizations broken down by cp:Stakeholder type?
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -35,6 +69,8 @@ def test_cq2():
 
     result = client.execute_sparql(query, infer=True)
     assert len(result['results']['bindings']) > 0
+
+    draw_graph(result, extra)
 
     # stakeholder URI -> (fundersOrg, forOrg)
     for_code2services = {}
