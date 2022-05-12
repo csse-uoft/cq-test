@@ -69,7 +69,7 @@ def test_cq1():
         """
 
     result = client.execute_sparql(query, infer=True)
-    prefix_cp = 'http://helpseeker.co/compass#'
+    assert len(result['results']['bindings']) > 0
 
     # stakeholder URI -> list of services
     stakeholder2services = {}
@@ -80,10 +80,12 @@ def test_cq1():
             stakeholder2services[for_stakeholder] = []
         stakeholder2services[for_stakeholder].append(simplify_uri(data['forService']['value']))
 
-    assert_list_ignore_order(stakeholder2services['cp:sh_Adult_Female_Homeless_Area0'], ['cp:S10-3-Food'])
-    assert_list_ignore_order(stakeholder2services['cp:sh_Adult_Female_Homeless_Area1'], ['cp:S12-2-Education'])
-    assert_list_ignore_order(stakeholder2services['cp:sh_Adult_Male_Homeless_Area0'], ['cp:S10-3-Food'])
-    assert_list_ignore_order(stakeholder2services['cp:sh_Homeless_Female_Youth_Area0'], [
-        'cp:S10-1-Shelter', 'cp:S10-2-Shelter', 'cp:S11-1-Food', 'cp:S11-2-Food', 'cp:S11-3-Food'
-    ])
-    assert_list_ignore_order(stakeholder2services['cp:sh_Homeless_Female_Youth_Area1'], ['cp:S12-1-Education'])
+    assert_list_ignore_order(stakeholder2services['cp:sh-Adult-Female-Homeless-in_Area0'], ['cp:S10-3-Food'])
+    assert_list_ignore_order(stakeholder2services['cp:sh-Adult-Female-Homeless-in_Area1'],
+                             ['cp:S12-2-Education', 'cp:S13-1-Health', 'cp:S13-2-Health'])
+    assert_list_ignore_order(stakeholder2services['cp:sh-Adult-Male-Homeless-in_Area0'], ['cp:S10-3-Food'])
+    assert_list_ignore_order(stakeholder2services['cp:sh-Homeless-Female-Youth-in_Area0'],
+                             ['cp:S10-1-Shelter', 'cp:S10-2-Shelter', 'cp:S11-1-Food', 'cp:S11-2-Food',
+                              'cp:S11-3-Food'])
+    assert_list_ignore_order(stakeholder2services['cp:sh-Homeless-Female-Youth-in_Area1'],
+                             ['cp:S12-1-Education', 'cp:S13-1-Health', 'cp:S13-2-Health'])
